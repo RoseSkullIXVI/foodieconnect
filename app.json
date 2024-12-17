@@ -36,6 +36,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "259df936-241b-4c43-9924-cfad8d34825e"
+      }
+    },
+    "owner": "roseskull"
   }
 }
