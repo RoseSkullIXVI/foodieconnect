@@ -22,7 +22,7 @@ export default function Index() {
       }}
     >
       <Heading bold={true} size="3xl" className="text-center mb-2"> Welcome to the app & let's get started</Heading>
-      <Button size="md" variant="solid" action="custom" className="w-full m-2">
+      <Button size="md" variant="solid" action="custom" className="w-full m-2" onPress={() => {router.push('/SignUp')}}>
         <ButtonText className="text-black" >Sign up</ButtonText>
       </Button>
       <Button size="md" variant="rounded" action="custom" className="w-full m-2" onPress={() => {router.push('/Login')}}>
