@@ -165,7 +165,7 @@ export default function Login() {
             <ButtonText className="text-black">{loading ? "Logging in..." : "Log in"}</ButtonText>
           </Button>
 
-          <Link href="/+not-found" className="text-right align-bottom mt-2">
+          <Link href="/ForgotPassword" className="text-right align-bottom mt-2">
             Forgot password?
           </Link>
         </ScrollView>

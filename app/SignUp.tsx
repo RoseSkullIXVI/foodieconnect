@@ -37,6 +37,7 @@ import { Colors } from "@/constants/Colors";
 import { Controller, Form, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
+import { err } from "react-native-svg";
 
 const validationSchema = Yup.object().shape({
   email: Yup.string().email("Invalid email").required("Email is required"),
@@ -71,23 +72,32 @@ export default function SignUp() {
   const handleSignUp = async (data: any) => {
     setLoading(true);
     console.log(data);
-    try {
-        const response = await axios.post("http://192.168.10.153:3000/auth/register", {           
+    axios.post("http://192.168.10.153:3000/auth/register", {           
             fullname: data.Fullname,
             username: data.Username,
             email: data.email,
             password: data.password
-          });
+          })
+          .then((response) => {
+            if (response.data.access_token) {
+              SecureStore.setItemAsync("acc_tok", response.data.access_token);
+              Alert.alert("Success", "Sign up successfully!");
+            }
+            setLoading(false);
+          })
+          .catch((error) => {
+            if (error.response.data.message === "Username already taken"){
+              Alert.alert("Error", "Username already exists.");
+            }else {
+              Alert.alert("Error", "Something went wrong. Please try again.");
+            }
+            setLoading(false);
+          })
     
-          if (response.data.access_token) {
-            await SecureStore.setItemAsync("acc_tok", response.data.access_token);
-            Alert.alert("Success", "Sign up successfully!");
-          }
-    } catch (error) {
-      Alert.alert("Error", "Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+  
+    
+    
+
   };
 
   return (
@@ -211,6 +221,9 @@ export default function SignUp() {
                     value={value}
                     onChangeText={onChange}
                     onBlur={onBlur}
+                    secureTextEntry={true}
+                    textContentType="oneTimeCode"
+                    
                   />
                   <InputSlot
                     className="pr-3"
@@ -246,6 +259,8 @@ export default function SignUp() {
                     value={value}
                     onChangeText={onChange}
                     onBlur={onBlur}
+                    secureTextEntry={true}
+                    textContentType="oneTimeCode"
                   />
                   <InputSlot
                     className="pr-3"

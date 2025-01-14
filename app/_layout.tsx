@@ -8,5 +8,6 @@ export default function RootLayout() {
      <Stack.Screen name='index' options={{headerShown : false  }} />
      <Stack.Screen name='Login'  options={{headerTitle: '' , headerBackButtonDisplayMode: "minimal" , headerTransparent: true }}/>
      <Stack.Screen name='SignUp'  options={{headerTitle: '' , headerBackButtonDisplayMode: "minimal" , headerTransparent: true }}/>
+     <Stack.Screen name='ForgotPassword'  options={{headerTitle: '' , headerBackButtonDisplayMode: "minimal" , headerTransparent: true }}/>
     </Stack></GluestackUIProvider>;
 }
