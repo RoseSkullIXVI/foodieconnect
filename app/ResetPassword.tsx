@@ -28,19 +28,26 @@ import {
 } from "@/components/ui/button";
 import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input";
 import { EyeIcon, EyeOffIcon, AlertCircleIcon } from "@/components/ui/icon";
-import { Link } from "expo-router";
+import { Link, Redirect, useLocalSearchParams } from "expo-router";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
+import YupPassword from 'yup-password';
+YupPassword(Yup);
 
 // Validation schema
+require('yup-password')(Yup);
 const validationSchema = Yup.object().shape({
-  email: Yup.string().email("Invalid email").required("Email is required"),
-  password: Yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
+ password: Yup.string().password().required(),
+  re_password: Yup.string().oneOf(
+    [Yup.ref("password"), undefined],
+    "Passwords must match"
+  ),
 });
 
-export default function Login() {
+export default function ResetPassword() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { token } = useLocalSearchParams<{ token?: string }>();
 
   const {
     control,
@@ -50,23 +57,34 @@ export default function Login() {
     resolver: yupResolver(validationSchema),
   });
 
-  const handleLogin = async (data: { email: any; password: any; }) => {
+  const handleReset = async (data: any) => {
     setLoading(true);
-    try {
-      const response = await axios.post("http://192.168.10.153:3000/auth/login", {
-        email: data.email,
-        password: data.password,
-      });
-
-      if (response.data.access_token) {
-        await SecureStore.setItemAsync("acc_tok", response.data.access_token);
-        Alert.alert("Success", "Logged in successfully!");
-      }
-    } catch (err) {
-      Alert.alert("Error", "Invalid credentials, please try again.");
-    } finally {
-      setLoading(false);
-    }
+    axios.post("http://192.168.10.153:3000/users/resetPassword", {           
+        token: token,
+        newPassword: data.password,
+      })
+      .then((response) => {
+        if (response.status === 200) {  // Safer way to check success
+          Alert.alert("Success", "Your password reset was successful!");
+          return <Redirect href="/Login" />;
+        }
+      })
+      .catch((error) => {
+        if (error.response) {
+          // Check if server responded with an error
+          if (error.response.data?.message === "Invalid or expired reset token") {
+            Alert.alert("Error", "Invalid token.");
+          } else {
+            Alert.alert("Error", error.response.data?.message || "Something went wrong. Please try again.");
+          }
+        } else {
+          // Handle network errors
+          Alert.alert("Error", "Network error. Please check your internet connection.");
+        }
+      })
+      .finally(() => {
+        setLoading(false);
+      });    
   };
 
   return (
@@ -84,42 +102,11 @@ export default function Login() {
           }}
         >
           <Heading bold size="3xl" className="text-center">
-            Log in
+          Reset password
           </Heading>
           <Text className="text-center align-bottom mt-2">
-            Enter your details to continue
+          Create a new password. Make sure its different from your previous ones for security
           </Text>
-
-          {/* Email Input */}
-          <FormControl isInvalid={!!errors.email}>
-            <FormControlLabel>
-              <FormControlLabelText className="ml-2 mt-2">
-                Enter your e-mail
-              </FormControlLabelText>
-            </FormControlLabel>
-            <Controller
-              name="email"
-              control={control}
-              render={({ field: { onChange, onBlur, value } }) => (
-                <Input className="w-full m-2" size="md" variant="rounded">
-                  <InputField
-                    type="text"
-                    value={value}
-                    onChangeText={onChange}
-                    onBlur={onBlur}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                  />
-                </Input>
-              )}
-            />
-            {errors.email && (
-              <FormControlError>
-                <FormControlErrorIcon as={AlertCircleIcon} />
-                <FormControlErrorText>{errors.email.message}</FormControlErrorText>
-              </FormControlError>
-            )}
-          </FormControl>
 
           {/* Password Input */}
           <FormControl isInvalid={!!errors.password}>
@@ -153,21 +140,48 @@ export default function Login() {
             )}
           </FormControl>
 
+          <FormControl isInvalid={!!errors.password}>
+            <FormControlLabel>
+              <FormControlLabelText className="ml-2 mt-2">
+                Repeat your password
+              </FormControlLabelText>
+            </FormControlLabel>
+            <Controller
+              name="re_password"
+              control={control}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Input className="w-full m-2" size="md" variant="rounded">
+                  <InputField
+                    type={showPassword ? "text" : "password"}
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                  />
+                  <InputSlot className="pr-3" onPress={() => setShowPassword(!showPassword)}>
+                    <InputIcon as={showPassword ? EyeIcon : EyeOffIcon} />
+                  </InputSlot>
+                </Input>
+              )}
+            />
+            {errors.re_password && (
+              <FormControlError>
+                <FormControlErrorIcon as={AlertCircleIcon} />
+                <FormControlErrorText>{errors.re_password.message}</FormControlErrorText>
+              </FormControlError>
+            )}
+          </FormControl>
+
           {/* Submit Button */}
           <Button
             size="md"
             variant="solid"
             action="custom"
             className="w-full m-2"
-            onPress={handleSubmit(handleLogin)}
+            onPress={handleSubmit(handleReset)}
           >
             {loading ? <ButtonSpinner color="gray" /> : null}
-            <ButtonText className="text-black">{loading ? "Logging in..." : "Log in"}</ButtonText>
+            <ButtonText className="text-black">{loading ? "Reseting password..." : "Reset Password"}</ButtonText>
           </Button>
-
-          <Link href="/ForgotPassword" className="text-right align-bottom mt-2">
-            Forgot password?
-          </Link>
         </ScrollView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>

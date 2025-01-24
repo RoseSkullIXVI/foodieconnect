@@ -38,12 +38,15 @@ import { Controller, Form, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
 import { err } from "react-native-svg";
+import YupPassword from 'yup-password';
+YupPassword(Yup);
+
+// Validation schema
+require('yup-password')(Yup);
 
 const validationSchema = Yup.object().shape({
   email: Yup.string().email("Invalid email").required("Email is required"),
-  password: Yup.string()
-    .min(6, "Password must be at least 6 characters")
-    .required("Password is required"),
+  password: Yup.string().password().required(),
   passwordConfirmation: Yup.string().oneOf(
     [Yup.ref("password"), undefined],
     "Passwords must match"
@@ -221,7 +224,7 @@ export default function SignUp() {
                     value={value}
                     onChangeText={onChange}
                     onBlur={onBlur}
-                    secureTextEntry={true}
+                    //secureTextEntry={true}
                     textContentType="oneTimeCode"
                     
                   />
@@ -259,7 +262,7 @@ export default function SignUp() {
                     value={value}
                     onChangeText={onChange}
                     onBlur={onBlur}
-                    secureTextEntry={true}
+                    //secureTextEntry={true}
                     textContentType="oneTimeCode"
                   />
                   <InputSlot
