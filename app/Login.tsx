@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/button";
 import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input";
 import { EyeIcon, EyeOffIcon, AlertCircleIcon } from "@/components/ui/icon";
-import { Link } from "expo-router";
+import { Link, Redirect, useRouter } from "expo-router";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 
@@ -41,6 +41,7 @@ const validationSchema = Yup.object().shape({
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const {
     control,
@@ -61,6 +62,7 @@ export default function Login() {
       if (response.data.access_token) {
         await SecureStore.setItemAsync("acc_tok", response.data.access_token);
         Alert.alert("Success", "Logged in successfully!");
+        router.replace("/(tabs)/Profile");
       }
     } catch (err) {
       Alert.alert("Error", "Invalid credentials, please try again.");
