@@ -27,10 +27,10 @@ import {
   ButtonGroup,
 } from "@/components/ui/button";
 import { B } from "@expo/html-elements";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { AlertCircleIcon, EyeIcon, EyeOffIcon } from "@/components/ui/icon";
 import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 import { Colors } from "@/constants/Colors";
@@ -39,6 +39,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
 import { err } from "react-native-svg";
 import YupPassword from 'yup-password';
+import { AuthContext } from "@/Context/AuthContect";
 YupPassword(Yup);
 
 // Validation schema
@@ -57,7 +58,7 @@ const validationSchema = Yup.object().shape({
 
 export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const authContext = useContext(AuthContext);
   const handleState = () => {
     setShowPassword((showState) => {
       return !showState;
@@ -73,36 +74,28 @@ export default function SignUp() {
   });
 
   const handleSignUp = async (data: any) => {
-    setLoading(true);
-    console.log(data);
-    axios.post("http://192.168.10.153:3000/auth/register", {           
-            fullname: data.Fullname,
-            username: data.Username,
-            email: data.email,
-            password: data.password
-          })
-          .then((response) => {
-            if (response.data.access_token) {
-              SecureStore.setItemAsync("acc_tok", response.data.access_token);
-              Alert.alert("Success", "Sign up successfully!");
-            }
-            setLoading(false);
-          })
-          .catch((error) => {
-            if (error.response.data.message === "Username already taken"){
-              Alert.alert("Error", "Username already exists.");
-            }else {
-              Alert.alert("Error", "Something went wrong. Please try again.");
-            }
-            setLoading(false);
-          })
-    
-  
-    
-    
+    // Ensure the context exists before using it
+    if (!authContext) {
+      Alert.alert("Error", "Auth context not available.");
+      return;
+    }
 
+    const { signup } = authContext;
+
+    try {
+      await signup(data.email, data.password, data.Fullname, data.Username);
+      Alert.alert("Success", "Sign-up successful!");
+      router.replace("/(tabs)/Profile");
+    } catch (error: unknown) {
+      // Type guard for error
+      if (error instanceof Error) {
+        Alert.alert("Error", error.message || "Something went wrong.");
+      } else {
+        Alert.alert("Error", "An unknown error occurred.");
+      }
+    }
   };
-
+  const loading = authContext?.loading;
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: "#f7f5ee" }}

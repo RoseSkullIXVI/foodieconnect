@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   Alert,
   Keyboard,
@@ -31,6 +31,7 @@ import { EyeIcon, EyeOffIcon, AlertCircleIcon } from "@/components/ui/icon";
 import { Link, Redirect, useRouter } from "expo-router";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
+import { AuthContext } from "@/Context/AuthContect";
 
 // Validation schema
 const validationSchema = Yup.object().shape({
@@ -40,8 +41,9 @@ const validationSchema = Yup.object().shape({
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+  //const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const authContext = useContext(AuthContext);
 
   const {
     control,
@@ -52,25 +54,27 @@ export default function Login() {
   });
 
   const handleLogin = async (data: { email: any; password: any; }) => {
-    setLoading(true);
+    if (!authContext) {
+          Alert.alert("Error", "Auth context not available.");
+          return;
+        }
+    
+    const { login } = authContext;
+
     try {
-      const response = await axios.post("http://192.168.10.153:3000/auth/login", {
-        email: data.email,
-        password: data.password,
-      });
-
-      if (response.data.access_token) {
-        await SecureStore.setItemAsync("acc_tok", response.data.access_token);
-        Alert.alert("Success", "Logged in successfully!");
-        router.replace("/(tabs)/Profile");
-      }
-    } catch (err) {
-      Alert.alert("Error", "Invalid credentials, please try again.");
-    } finally {
-      setLoading(false);
-    }
+          await login(data.email, data.password);
+          Alert.alert("Success", "Logged in successfully!");
+          router.replace("/(tabs)/Profile");
+        } catch (error: unknown) {
+          // Type guard for error
+          if (error instanceof Error) {
+            Alert.alert("Error", "Invalid credentials, please try again.");
+          } else {
+            Alert.alert("Error", "An unknown error occurred.");
+          }
+        }
   };
-
+  const loading = authContext?.loading;
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: "#f7f5ee" }}
