@@ -12,7 +12,6 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-
     <GluestackUIProvider mode="light">
     <Layout></Layout>
     </GluestackUIProvider>

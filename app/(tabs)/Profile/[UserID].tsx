@@ -12,6 +12,10 @@ import { Center } from "@/components/ui/center";
 import { HStack } from "@/components/ui/hstack";
 import { Button, ButtonText } from "@/components/ui/button";
 import { Image } from "@/components/ui/image"
+
+
+
+
 export default function Profile() {
   return (
     <Center className="flex-1 bg-[#F7F5EE] px-4">

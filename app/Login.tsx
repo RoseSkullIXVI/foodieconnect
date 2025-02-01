@@ -21,22 +21,21 @@ import {
   FormControlLabel,
   FormControlLabelText,
 } from "@/components/ui/form-control";
-import {
-  Button,
-  ButtonText,
-  ButtonSpinner,
-} from "@/components/ui/button";
+import { Button, ButtonText, ButtonSpinner } from "@/components/ui/button";
 import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input";
 import { EyeIcon, EyeOffIcon, AlertCircleIcon } from "@/components/ui/icon";
 import { Link, Redirect, useRouter } from "expo-router";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 import { AuthContext } from "@/Context/AuthContect";
+import {jwtDecode} from "jwt-decode";
 
 // Validation schema
 const validationSchema = Yup.object().shape({
   email: Yup.string().email("Invalid email").required("Email is required"),
-  password: Yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
+  password: Yup.string()
+    .min(6, "Password must be at least 6 characters")
+    .required("Password is required"),
 });
 
 export default function Login() {
@@ -53,26 +52,36 @@ export default function Login() {
     resolver: yupResolver(validationSchema),
   });
 
-  const handleLogin = async (data: { email: any; password: any; }) => {
+  const handleLogin = async (data: { email: any; password: any }) => {
     if (!authContext) {
-          Alert.alert("Error", "Auth context not available.");
-          return;
-        }
-    
+      Alert.alert("Error", "Auth context not available.");
+      return;
+    }
+
     const { login } = authContext;
+    const {userToken} = authContext;
 
     try {
-          await login(data.email, data.password);
-          Alert.alert("Success", "Logged in successfully!");
-          router.replace("/(tabs)/Profile");
-        } catch (error: unknown) {
-          // Type guard for error
-          if (error instanceof Error) {
-            Alert.alert("Error", "Invalid credentials, please try again.");
-          } else {
-            Alert.alert("Error", "An unknown error occurred.");
-          }
-        }
+      await login(data.email, data.password);
+      if (userToken) {
+        const decoded = jwtDecode(userToken);
+        console.log(decoded);
+        Alert.alert("Success", "Logged in successfully!");
+        router.replace({
+          pathname : "/(tabs)/Profile/[UserID]",
+          params : {UserID : 1}
+        });
+      } else {
+        Alert.alert("Error", "User token is null.");
+      }
+    } catch (error: unknown) {
+      // Type guard for error
+      if (error instanceof Error) {
+        Alert.alert("Error", "Invalid credentials, please try again.");
+      } else {
+        Alert.alert("Error", "An unknown error occurred.");
+      }
+    }
   };
   const loading = authContext?.loading;
   return (
@@ -122,7 +131,9 @@ export default function Login() {
             {errors.email && (
               <FormControlError>
                 <FormControlErrorIcon as={AlertCircleIcon} />
-                <FormControlErrorText>{errors.email.message}</FormControlErrorText>
+                <FormControlErrorText>
+                  {errors.email.message}
+                </FormControlErrorText>
               </FormControlError>
             )}
           </FormControl>
@@ -145,7 +156,10 @@ export default function Login() {
                     onChangeText={onChange}
                     onBlur={onBlur}
                   />
-                  <InputSlot className="pr-3" onPress={() => setShowPassword(!showPassword)}>
+                  <InputSlot
+                    className="pr-3"
+                    onPress={() => setShowPassword(!showPassword)}
+                  >
                     <InputIcon as={showPassword ? EyeIcon : EyeOffIcon} />
                   </InputSlot>
                 </Input>
@@ -154,7 +168,9 @@ export default function Login() {
             {errors.password && (
               <FormControlError>
                 <FormControlErrorIcon as={AlertCircleIcon} />
-                <FormControlErrorText>{errors.password.message}</FormControlErrorText>
+                <FormControlErrorText>
+                  {errors.password.message}
+                </FormControlErrorText>
               </FormControlError>
             )}
           </FormControl>
@@ -168,7 +184,9 @@ export default function Login() {
             onPress={handleSubmit(handleLogin)}
           >
             {loading ? <ButtonSpinner color="gray" /> : null}
-            <ButtonText className="text-black">{loading ? "Logging in..." : "Log in"}</ButtonText>
+            <ButtonText className="text-black">
+              {loading ? "Logging in..." : "Log in"}
+            </ButtonText>
           </Button>
 
           <Link href="/ForgotPassword" className="text-right align-bottom mt-2">
