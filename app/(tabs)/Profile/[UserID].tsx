@@ -7,16 +7,83 @@ import {
   AvatarFallbackText,
   AvatarImage,
 } from "@/components/ui/avatar";
-import { ScrollView, Text } from "react-native";
+import { Alert, ScrollView, Text } from "react-native";
 import { Center } from "@/components/ui/center";
 import { HStack } from "@/components/ui/hstack";
 import { Button, ButtonText } from "@/components/ui/button";
 import { Image } from "@/components/ui/image"
+import { useLocalSearchParams } from "expo-router";
+import { AuthContext } from "@/Context/AuthContect";
+import { useContext, useEffect, useState } from "react";
+import { jwtDecode } from "jwt-decode";
+import axios from "axios";
+import { err } from "react-native-svg";
+import { resolveParentId } from "expo-router/build/useNavigation";
 
 
 
 
 export default function Profile() {
+  const authContext = useContext(AuthContext);
+  const local = useLocalSearchParams();
+  const [ProfileData, setProfileData] = useState({})
+  const [RestaurantData, setRestaurantData] = useState({})
+  const [FollowersData, setFollowersData] = useState({})
+  const [FollowingData, setFollowingData] = useState({})
+  if (authContext) {
+    const { userToken } = authContext;
+    if (userToken) {
+      const decoded = jwtDecode(userToken);
+      const isOwnProf = local.UserID === decoded.sub;
+  useEffect(() => {
+    const fetchData = async () => {
+      //Get Profile
+      axios.get(`http://192.168.10.153:3000/users/getprofile/${local.UserID}` , { headers: {"Authorization" : `Bearer ${userToken}`} })
+      .then((response) => {
+        console.log("Profile" , response);
+        setProfileData(response);
+      })
+      .catch((error) => {
+        Alert.alert("ERROR" , "There was an error " + error)
+      })
+      /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      // Get Restaurants
+      axios.get(`http://192.168.10.153:3000/retaurant/getUserRestaurant/${local.UserID}` , { headers: {"Authorization" : `Bearer ${userToken}`} })
+      .then((response) => {
+        console.log("Restaurants" , response);
+        setRestaurantData(response);
+      })
+      .catch((error) => {
+        Alert.alert("ERROR" , "There was an error " + error)
+      })
+      // /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      // //Get Followers
+      axios.get(`http://192.168.10.153:3000/following-followers/returnFollowers/${local.UserID}` , { headers: {"Authorization" : `Bearer ${userToken}`} })
+      .then((response) => {
+      console.log("Followers" , response);
+        setFollowersData(response);
+      })
+      .catch((error) => {
+        Alert.alert("ERROR" , "There was an error " + error)
+      })
+      // /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      // //Get Following
+      // axios.get(`http://192.168.10.153:3000/following-followers/returnFollowing/${local.UserID}` , { headers: {"Authorization" : `Bearer ${userToken}`} })
+      // .then((response) => {
+       // console.log("Following" , response);
+      //   setFollowingData(response);
+      // })
+      // .catch((error) => {
+      //   Alert.alert("ERROR" , "There was an error " + error)
+      // })
+    };
+    fetchData();
+  } , [])
+    
+ 
+
+}
+}
   return (
     <Center className="flex-1 bg-[#F7F5EE] px-4">
       <VStack space="md" className="items-center w-full">

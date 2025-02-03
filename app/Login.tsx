@@ -65,11 +65,10 @@ export default function Login() {
       await login(data.email, data.password);
       if (userToken) {
         const decoded = jwtDecode(userToken);
-        console.log(decoded);
         Alert.alert("Success", "Logged in successfully!");
         router.replace({
           pathname : "/(tabs)/Profile/[UserID]",
-          params : {UserID : 1}
+          params : {UserID : decoded.sub ? decoded.sub.toString() : "" }
         });
       } else {
         Alert.alert("Error", "User token is null.");

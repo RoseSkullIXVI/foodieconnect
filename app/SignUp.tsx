@@ -40,6 +40,7 @@ import * as Yup from "yup";
 import { err } from "react-native-svg";
 import YupPassword from 'yup-password';
 import { AuthContext } from "@/Context/AuthContect";
+import { jwtDecode } from "jwt-decode";
 YupPassword(Yup);
 
 // Validation schema
@@ -81,11 +82,18 @@ export default function SignUp() {
     }
 
     const { signup } = authContext;
+    const {userToken} = authContext;
 
     try {
       await signup(data.email, data.password, data.Fullname, data.Username);
-      Alert.alert("Success", "Sign-up successful!");
-      router.replace("/(tabs)/Profile");
+       if (userToken) {
+              const decoded = jwtDecode(userToken);
+              Alert.alert("Success", "Sign-up successful!");
+              router.replace({
+                pathname : "/(tabs)/Profile/[UserID]",
+                params : {UserID : decoded.sub ? decoded.sub.toString() : "" }
+              });
+          }
     } catch (error: unknown) {
       // Type guard for error
       if (error instanceof Error) {
