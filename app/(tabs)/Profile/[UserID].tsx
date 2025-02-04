@@ -26,10 +26,10 @@ import { resolveParentId } from "expo-router/build/useNavigation";
 export default function Profile() {
   const authContext = useContext(AuthContext);
   const local = useLocalSearchParams();
-  const [ProfileData, setProfileData] = useState({})
-  const [RestaurantData, setRestaurantData] = useState({})
-  const [FollowersData, setFollowersData] = useState({})
-  const [FollowingData, setFollowingData] = useState({})
+  const [ProfileData, setProfileData] = useState<any>()
+  const [RestaurantData, setRestaurantData] = useState<any>([])
+  const [FollowersData, setFollowersData] = useState([])
+  const [FollowingData, setFollowingData] = useState([])
   if (authContext) {
     const { userToken } = authContext;
     if (userToken) {
@@ -40,8 +40,7 @@ export default function Profile() {
       //Get Profile
       axios.get(`http://192.168.10.153:3000/users/getprofile/${local.UserID}` , { headers: {"Authorization" : `Bearer ${userToken}`} })
       .then((response) => {
-        console.log("Profile" , response);
-        setProfileData(response);
+        setProfileData(response.data);
       })
       .catch((error) => {
         Alert.alert("ERROR" , "There was an error " + error)
@@ -50,8 +49,7 @@ export default function Profile() {
       // Get Restaurants
       axios.get(`http://192.168.10.153:3000/retaurant/getUserRestaurant/${local.UserID}` , { headers: {"Authorization" : `Bearer ${userToken}`} })
       .then((response) => {
-        console.log("Restaurants" , response);
-        setRestaurantData(response);
+        setRestaurantData(response.data);
       })
       .catch((error) => {
         Alert.alert("ERROR" , "There was an error " + error)
@@ -60,22 +58,20 @@ export default function Profile() {
       // //Get Followers
       axios.get(`http://192.168.10.153:3000/following-followers/returnFollowers/${local.UserID}` , { headers: {"Authorization" : `Bearer ${userToken}`} })
       .then((response) => {
-      console.log("Followers" , response);
-        setFollowersData(response);
+        setFollowersData(response.data);
       })
       .catch((error) => {
         Alert.alert("ERROR" , "There was an error " + error)
       })
       // /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       // //Get Following
-      // axios.get(`http://192.168.10.153:3000/following-followers/returnFollowing/${local.UserID}` , { headers: {"Authorization" : `Bearer ${userToken}`} })
-      // .then((response) => {
-       // console.log("Following" , response);
-      //   setFollowingData(response);
-      // })
-      // .catch((error) => {
-      //   Alert.alert("ERROR" , "There was an error " + error)
-      // })
+      axios.get(`http://192.168.10.153:3000/following-followers/returnFollowing/${local.UserID}` , { headers: {"Authorization" : `Bearer ${userToken}`} })
+      .then((response) => {
+        setFollowingData(response.data);
+      })
+      .catch((error) => {
+        Alert.alert("ERROR" , "There was an error " + error)
+      })
     };
     fetchData();
   } , [])
@@ -89,33 +85,33 @@ export default function Profile() {
       <VStack space="md" className="items-center w-full">
         {/* Avatar */}
         <Avatar size="xl">
-          <AvatarFallbackText>Jane Doe</AvatarFallbackText>
-          <AvatarImage source={{ uri: "" }} />
+          <AvatarFallbackText>{ProfileData ? ProfileData.Name : "John Doe"}</AvatarFallbackText>
+          <AvatarImage source={{ uri: ProfileData.ProfilePicture }} />
         </Avatar>
 
         {/* Name & Description */}
         <Heading bold size="3xl" className="text-center mt-2">
-          John Doe
+          {ProfileData ? ProfileData.Name : "John Doe"}
         </Heading>
-        <Text className="text-center mt-1">Food Lover</Text>
+        <Text className="text-center mt-1">{ProfileData ? ProfileData.Bio : "Food Lover"}</Text>
 
         {/* Stats Section */}
         <HStack space="lg" className="mt-4">
           <VStack className="items-center">
             <Heading bold size="xl">
-              100
+            {RestaurantData.length}
             </Heading>
             <Text>Restaurants</Text>
           </VStack>
           <VStack className="items-center">
             <Heading bold size="xl">
-              250
+              {FollowingData.length}
             </Heading>
             <Text>Following</Text>
           </VStack>
           <VStack className="items-center">
             <Heading bold size="xl">
-              500
+              {FollowersData.length}
             </Heading>
             <Text>Followers</Text>
           </VStack>
@@ -134,19 +130,7 @@ export default function Profile() {
         <ScrollView className="w-full flex-grow-0 h-96" showsVerticalScrollIndicator={false}>
           <VStack space="lg" className="mt-2">
             {/* Restaurant Item */}
-            {[
-              { name: "Mikel", image: "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" },
-              { name: "Remezzo", image: "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" },
-              { name: "Neapolitana", image: "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" },
-              { name: "Neapolitana", image: "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" },
-              { name: "Neapolitana", image: "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" },
-              { name: "Neapolitana", image: "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" },
-              { name: "Neapolitana", image: "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" },
-              { name: "Neapolitana", image: "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" },
-              { name: "Neapolitana", image: "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" },
-              { name: "Neapolitana", image: "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" },
-              { name: "Neapolitana", image: "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" },
-            ].map((restaurant, index) => (
+            {RestaurantData.map((restaurant:any, index : any) => (
               <HStack key={index} space="md" className="items-center">
                 {/* Restaurant Image */}
                 <Image size="sm" source={{ uri: restaurant.image }} alt="restaurant-image" className="rounded-lg" />
