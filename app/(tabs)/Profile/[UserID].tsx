@@ -40,6 +40,7 @@ export default function Profile() {
       //Get Profile
       axios.get(`http://192.168.10.153:3000/users/getprofile/${local.UserID}` , { headers: {"Authorization" : `Bearer ${userToken}`} })
       .then((response) => {
+        console.log("User Profile" , response.data)
         setProfileData(response.data);
       })
       .catch((error) => {
@@ -49,6 +50,7 @@ export default function Profile() {
       // Get Restaurants
       axios.get(`http://192.168.10.153:3000/retaurant/getUserRestaurant/${local.UserID}` , { headers: {"Authorization" : `Bearer ${userToken}`} })
       .then((response) => {
+        console.log("Restaurant" , response.data)
         setRestaurantData(response.data);
       })
       .catch((error) => {
@@ -58,6 +60,7 @@ export default function Profile() {
       // //Get Followers
       axios.get(`http://192.168.10.153:3000/following-followers/returnFollowers/${local.UserID}` , { headers: {"Authorization" : `Bearer ${userToken}`} })
       .then((response) => {
+        console.log("Followers" , response.data)
         setFollowersData(response.data);
       })
       .catch((error) => {
@@ -67,6 +70,7 @@ export default function Profile() {
       // //Get Following
       axios.get(`http://192.168.10.153:3000/following-followers/returnFollowing/${local.UserID}` , { headers: {"Authorization" : `Bearer ${userToken}`} })
       .then((response) => {
+        console.log("Following" , response.data)
         setFollowingData(response.data);
       })
       .catch((error) => {
@@ -85,15 +89,15 @@ export default function Profile() {
       <VStack space="md" className="items-center w-full">
         {/* Avatar */}
         <Avatar size="xl">
-          <AvatarFallbackText>{ProfileData ? ProfileData.Name : "John Doe"}</AvatarFallbackText>
-          <AvatarImage source={{ uri: ProfileData.ProfilePicture }} />
+          <AvatarFallbackText>{ProfileData?.FullName ? ProfileData.FullName : "John Doe"}</AvatarFallbackText>
+          <AvatarImage source={{ uri: ProfileData?.ProfilePicture ? ProfileData.ProfilePicture : "" }} />
         </Avatar>
 
         {/* Name & Description */}
         <Heading bold size="3xl" className="text-center mt-2">
-          {ProfileData ? ProfileData.Name : "John Doe"}
+          @{ProfileData?.FullName ? ProfileData.FullName : "John Doe"}
         </Heading>
-        <Text className="text-center mt-1">{ProfileData ? ProfileData.Bio : "Food Lover"}</Text>
+        <Text className="text-center mt-1">{ProfileData?.Bio ? ProfileData.Bio : "Food Lover"}</Text>
 
         {/* Stats Section */}
         <HStack space="lg" className="mt-4">
@@ -133,11 +137,11 @@ export default function Profile() {
             {RestaurantData.map((restaurant:any, index : any) => (
               <HStack key={index} space="md" className="items-center">
                 {/* Restaurant Image */}
-                <Image size="sm" source={{ uri: restaurant.image }} alt="restaurant-image" className="rounded-lg" />
+                <Image size="sm" source={{ uri: restaurant.restaurant.Picture }} alt="restaurant-image" className="rounded-lg" />
                 
                 {/* Restaurant Info */}
                 <VStack>
-                  <Text className="text-lg font-semibold">{restaurant.name}</Text>
+                  <Text className="text-lg font-semibold">{restaurant.restaurant.Name}</Text>
                   <HStack space="sm" className="mt-1">
                     {["Italian", "Pizza", "Cozy"].map((tag, i) => (
                       <Box key={i} className="bg-gray-200 px-2 py-1 rounded-full">
