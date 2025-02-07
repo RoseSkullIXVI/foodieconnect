@@ -26,6 +26,7 @@ import { resolveParentId } from "expo-router/build/useNavigation";
 export default function Profile() {
   const authContext = useContext(AuthContext);
   const local = useLocalSearchParams();
+  const [isOwnProf, setOwnProf] = useState(false);
   const [ProfileData, setProfileData] = useState<any>()
   const [RestaurantData, setRestaurantData] = useState<any>([])
   const [FollowersData, setFollowersData] = useState([])
@@ -33,10 +34,10 @@ export default function Profile() {
   if (authContext) {
     const { userToken } = authContext;
     if (userToken) {
-      const decoded = jwtDecode(userToken);
-      const isOwnProf = local.UserID === decoded.sub;
   useEffect(() => {
     const fetchData = async () => {
+      const decoded = jwtDecode(userToken);
+      setOwnProf(local.UserID === decoded.sub);
       //Get Profile
       axios.get(`http://192.168.10.153:3000/users/getprofile/${local.UserID}` , { headers: {"Authorization" : `Bearer ${userToken}`} })
       .then((response) => {
@@ -120,14 +121,17 @@ export default function Profile() {
             <Text>Followers</Text>
           </VStack>
         </HStack>
-        <Button
-          size="md"
-          variant="solid"
-          action="custom"
-          className="w-full m-2"
-        >
-          <ButtonText className="text-black">Follow</ButtonText>
-        </Button>
+        {isOwnProf && (
+           <Button
+           size="md"
+           variant="solid"
+           action="custom"
+           className="w-full m-2"
+         >
+           <ButtonText className="text-black">Follow</ButtonText>
+         </Button>
+        )}
+       
         <Heading bold size="2xl" className="text-center mt-2">
           Restaurant you liked
         </Heading>
